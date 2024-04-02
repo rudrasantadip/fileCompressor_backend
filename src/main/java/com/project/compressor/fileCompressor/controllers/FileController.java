@@ -7,7 +7,9 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StreamUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +25,7 @@ import com.project.compressor.fileCompressor.utils.Huffman;
 import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/file")
 public class FileController 
 {
@@ -34,34 +37,34 @@ public class FileController
     FileService fService;
 
     @PostMapping("/upload")
-    public String uploadfile(@RequestParam ("file") MultipartFile file)
+    public ResponseEntity<String> uploadfile(@RequestParam ("file") MultipartFile file)
     {
       try {
         String response = fService.uploadFile(file, uploadPath);
         fService.FILENAME=response;
-        return response;
+        return ResponseEntity.ok(response);
 
     } catch (IOException e) {
         
         e.printStackTrace();
     }  
-    return "";
+    return ResponseEntity.badRequest().body(null);
     }
 
     @GetMapping(value = "/download/{file}")
-    public String downloadFile(@PathVariable ("file") String name, HttpServletResponse response)
+    public void downloadFile(@PathVariable ("file") String name, HttpServletResponse response)
     {
         try 
         {
             InputStream fileStream = fService.getResource(uploadPath, name);
             StreamUtils.copy(fileStream, response.getOutputStream());
-            return name;
+            response.setContentType("application/octet-stream");
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + name + "\"");
         }
         catch (IOException e) 
         {
             e.printStackTrace();
         }
-        return "";
     }
 
     @GetMapping(value = "/compress/{file}")
