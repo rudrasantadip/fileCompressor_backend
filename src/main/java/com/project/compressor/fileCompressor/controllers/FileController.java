@@ -73,8 +73,28 @@ public class FileController
         String randomUuid = UUID.randomUUID().toString()+".huff";
         String filePath= uploadPath+File.separator+fileName;
         String compressedFile = uploadPath+File.separator+randomUuid;
-        Huffman hCompress = new Huffman(filePath,compressedFile );
-        hCompress.compress();
+        try {
+            Huffman.compress(filePath, compressedFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // Huffman hCompress = new Huffman(filePath,compressedFile );
+        // hCompress.compress();
+        fService.FILENAME_compressed=randomUuid;
+        return fService.FILENAME_compressed;
+    }
+
+    @GetMapping(value = "/decompress/{file}")
+    public String fdeCompress(@PathVariable("file") String fileName) throws ClassNotFoundException
+    {
+        String randomUuid = UUID.randomUUID().toString()+".txt";
+        String filePath= uploadPath+File.separator+fileName;
+        String decompressedFile = uploadPath+File.separator+randomUuid;
+        try {
+            Huffman.decompress(filePath, decompressedFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         fService.FILENAME_compressed=randomUuid;
         return fService.FILENAME_compressed;
     }
